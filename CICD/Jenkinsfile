@@ -28,11 +28,18 @@ pipeline {
     }
 
     stages {
-        stage('Build & Test') {
-            
+        stage('build') {
+            steps{
+                echo "testing from build"
+            }
+
         }
 
-        stage('Build Docker Image') {}
+        stage('test') {
+            steps{
+                echo "testing from test"
+            }
+        }
 
         stage('Push Image to ECR') {}
 
