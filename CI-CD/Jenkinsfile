@@ -2,6 +2,7 @@ pipeline {
     agent any
 
     options {
+        // testing Jenkins pipeline
         //  Specifying how many artifacts and logs we want to persist. 
         //  In this case we are going to persist the last 10 builds.
         buildDiscarder(logRotator(numToKeepStr: '10'))
