@@ -15,7 +15,7 @@ pipeline {
     }
 
     tools {
-        dockerTool 'docker-latest'
+        dockerTool 'docker'
     }
 
     environment {
