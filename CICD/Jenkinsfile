@@ -41,10 +41,6 @@ pipeline {
             }
         }
 
-        stage('Push Image to ECR') {}
-
-        stage('Deploy in ECS') {}
     }
 
-    post {}
 }
