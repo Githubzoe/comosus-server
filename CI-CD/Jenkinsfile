@@ -15,9 +15,8 @@ pipeline {
     }
 
     tools {
-        dockerTool 'docker',
+        dockerTool 'docker'
         nodejs "node"
-        
     }
 
     environment {
