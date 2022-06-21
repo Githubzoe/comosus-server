@@ -10,9 +10,9 @@ pipeline {
         timestamps()
     }
 
-    // tools {
-    //     dockerTool 'docker-latest'
-    // }
+    tools {
+        nodejs "Node-14.19"
+    }
 
     environment {
         IMAGE_VERSION = "${env.BUILD_ID}"
@@ -28,6 +28,14 @@ pipeline {
     }
 
     stages {
+
+        stage('Cleanup docker space') {
+            steps {
+                echo 'Cleanup docker space'
+                sh 'docker system prune -f'
+            }
+        }
+        
         stage('build') {
             steps{
                 echo "testing from build..."
