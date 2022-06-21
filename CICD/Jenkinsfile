@@ -57,7 +57,7 @@
 pipeline {
 	agent any
 	
-	tools { nodejs "node" }
+	tools { nodejs "Node-14.19" }
 	
 	environment {
 		registryCredential = 'ecr:us-east-1:awscreds'
