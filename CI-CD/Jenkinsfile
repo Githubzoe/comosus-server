@@ -37,12 +37,12 @@ pipeline {
     
     stages {
 
-        // stage('Cleanup docker space') {
-        //     steps {
-        //         echo 'Cleanup docker space'
-        //         sh 'docker system prune -f'
-        //     }
-        // }
+        stage('Cleanup docker space') {
+            steps {
+                echo 'Cleanup docker space'
+                sh 'docker system prune -f'
+            }
+        }
 
         stage('Git check out') {
             steps{

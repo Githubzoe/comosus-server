@@ -1,55 +1,123 @@
-#!/usr/bin/env groovy
+// #!/usr/bin/env groovy
+
+// pipeline {
+//     agent any
+
+//     options {
+//         buildDiscarder(logRotator(numToKeepStr: '10'))
+//         disableConcurrentBuilds()
+//         timeout(time: 1, unit: 'HOURS')
+//         timestamps()
+//     }
+
+//     tools {
+//         nodejs "Node-14.19"
+//     }
+
+//     environment {
+//         IMAGE_VERSION = "${env.BUILD_ID}"
+//         AWS_ECR_REGION = 'ap-southeast-2'
+//         AWS_ECS_SERVICE = 'test-backend-service'
+//         AWS_ECS_TASK_DEFINITION = 'test-backend'
+//         AWS_ECS_COMPATIBILITY = 'FARGATE'
+//         AWS_ECS_NETWORK_MODE = 'awsvpc'
+//         AWS_ECS_CPU = '256'
+//         AWS_ECS_MEMORY = '512'
+//         AWS_ECS_CLUSTER = 'a-comosus-cluster'
+//         AWS_ECS_TASK_DEFINITION_PATH = './CICD/ecs/backend-container-definition-update-image.json'
+//     }
+
+//     stages {
+
+//         stage('Cleanup docker space') {
+//             steps {
+//                 echo 'Cleanup docker space'
+//                 sh 'docker system prune -f'
+//             }
+//         }
+
+//         stage('build') {
+//             steps{
+//                 echo "testing from build..."
+//             }
+
+//         }
+
+//         stage('test') {
+//             steps{
+//                 echo "testing from test"
+//             }
+//         }
+
+
+//     }
+
+// }
 
 pipeline {
-    agent any
+	agent any
+	
+	tools { nodejs "node" }
+	
+	environment {
+		registryCredential = 'ecr:us-east-1:awscreds'
+		appRegistry = "947036392937.dkr.ecr.us-east-1.amazonaws.com/comosus-client-img"
+		comosusClientRegistry = "https://947036392937.dkr.ecr.us-east-1.amazonaws.com"
+		cluster = "ComosusClient"
+        service = "ComosusClientAppSVC"
+	}
 
-    options {
-        buildDiscarder(logRotator(numToKeepStr: '10'))
-        disableConcurrentBuilds()
-        timeout(time: 1, unit: 'HOURS')
-        timestamps()
-    }
-
-    tools {
-        nodejs "Node-14.19"
-    }
-
-    environment {
-        IMAGE_VERSION = "${env.BUILD_ID}"
-        AWS_ECR_REGION = 'ap-southeast-2'
-        AWS_ECS_SERVICE = 'test-backend-service'
-        AWS_ECS_TASK_DEFINITION = 'test-backend'
-        AWS_ECS_COMPATIBILITY = 'FARGATE'
-        AWS_ECS_NETWORK_MODE = 'awsvpc'
-        AWS_ECS_CPU = '256'
-        AWS_ECS_MEMORY = '512'
-        AWS_ECS_CLUSTER = 'a-comosus-cluster'
-        AWS_ECS_TASK_DEFINITION_PATH = './CICD/ecs/backend-container-definition-update-image.json'
-    }
-
-    stages {
-
-        stage('Cleanup docker space') {
-            steps {
-                echo 'Cleanup docker space'
+	stages {	
+		stage('Clear space'){
+		  steps {
+			    echo 'Cleanup docker space'
                 sh 'docker system prune -f'
+		  }
+		}
+		
+		stage('Fetch code'){
+		  steps {
+			git branch: 'develop', url: 'https://github.com/mable-pmyip/comosus-client.git'
+		  }
+		}
+		
+		stage('Install and Build'){
+		  steps {
+		    sh 'yarn install && yarn codegen && yarn build'
+		  }
+		}
+
+		stage('Test'){
+		  steps {
+			sh 'echo unit testing'
+		  }
+		}
+		
+		stage('Build App Image') {
+		   steps {
+            script {
+				dockerImage = docker.build( appRegistry + ":$BUILD_NUMBER", "-f Dockerfile.Mable .")
+			}
+		 }
+		}
+
+		stage('Upload App Image') {
+		  steps{
+			script {
+			  docker.withRegistry(comosusClientRegistry, registryCredential ) {
+				dockerImage.push("$BUILD_NUMBER")
+				dockerImage.push('latest')
+			  }
+			}
+		  }
+		}
+		
+		stage('Deploy to ecs') {
+            steps {
+            withAWS(credentials: 'awscreds', region: 'us-east-1') {
+                sh 'aws ecs update-service --cluster ${cluster} --service ${service} --force-new-deployment'
             }
-        }
-        
-        stage('build') {
-            steps{
-                echo "testing from build..."
-            }
-
-        }
-
-        stage('test') {
-            steps{
-                echo "testing from test"
-            }
-        }
-
-
-    }
-
+        } 
+     }
+  }
 }
