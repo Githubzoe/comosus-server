@@ -47,9 +47,8 @@
 # ENV CLIENT_BASE_URL https://a-comosus.com
 
 
+# CMD ["node", "dist/main"]
 
-
-CMD ["node", "dist/main"]
 
 FROM node:16 AS builder
 WORKDIR /app
