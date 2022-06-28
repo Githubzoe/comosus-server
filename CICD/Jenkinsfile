@@ -57,33 +57,34 @@
 pipeline {
 	agent any
 	
-	tools { nodejs "Node-14.19" }
+	tools { nodejs "node" }
 	
 	environment {
-		registryCredential = 'ecr:us-east-1:awscreds'
-		appRegistry = "947036392937.dkr.ecr.us-east-1.amazonaws.com/comosus-client-img"
-		comosusClientRegistry = "https://947036392937.dkr.ecr.us-east-1.amazonaws.com"
-		cluster = "ComosusClient"
-        service = "ComosusClientAppSVC"
+		registryCredential = 'ecr:ap-south-east:awscreds'
+		appRegistry = "997730026610.dkr.ecr.ap-southeast-2.amazonaws.com/comosus-server"
+		comosusServerRegistry = "https://997730026610.dkr.ecr.ap-southeast-2.amazonaws.com/"
+		cluster = "comosusServer"
+    service = "comosusServerSvc"
 	}
 
 	stages {	
 		stage('Clear space'){
 		  steps {
 			    echo 'Cleanup docker space'
-                sh 'docker system prune -f'
+          sh 'docker system prune -f'
+					sh 'docker image rm -f $(docker images -q)'
 		  }
 		}
 		
 		stage('Fetch code'){
 		  steps {
-			git branch: 'develop', url: 'https://github.com/mable-pmyip/comosus-client.git'
+			git branch: 'develop', url: 'https://github.com/Githubzoe/comosus-server.git'
 		  }
 		}
 		
 		stage('Install and Build'){
 		  steps {
-		    sh 'yarn install && yarn codegen && yarn build'
+		    sh 'yarn && yarn prisma generate && yarn build'
 		  }
 		}
 
@@ -96,7 +97,7 @@ pipeline {
 		stage('Build App Image') {
 		   steps {
             script {
-				dockerImage = docker.build( appRegistry + ":$BUILD_NUMBER", "-f Dockerfile.Mable .")
+				dockerImage = docker.build( appRegistry + ":$BUILD_NUMBER", "-f Dockerfile .")
 			}
 		 }
 		}
@@ -104,7 +105,7 @@ pipeline {
 		stage('Upload App Image') {
 		  steps{
 			script {
-			  docker.withRegistry(comosusClientRegistry, registryCredential ) {
+			  docker.withRegistry(comosusServerRegistry, registryCredential ) {
 				dockerImage.push("$BUILD_NUMBER")
 				dockerImage.push('latest')
 			  }
@@ -114,7 +115,7 @@ pipeline {
 		
 		stage('Deploy to ecs') {
             steps {
-            withAWS(credentials: 'awscreds', region: 'us-east-1') {
+            withAWS(credentials: 'awscreds', region: 'ap-southeast-1') {
                 sh 'aws ecs update-service --cluster ${cluster} --service ${service} --force-new-deployment'
             }
         } 
