@@ -60,7 +60,7 @@ pipeline {
 	tools { nodejs "node" }
 	
 	environment {
-		registryCredential = 'ecr:ap-south-east:awscreds'
+		registryCredential = 'ecr:ap-southeast-2:awscreds'
 		appRegistry = "997730026610.dkr.ecr.ap-southeast-2.amazonaws.com/comosus-server"
 		comosusServerRegistry = "https://997730026610.dkr.ecr.ap-southeast-2.amazonaws.com/"
 		cluster = "comosusServer"
@@ -115,7 +115,7 @@ pipeline {
 		
 		stage('Deploy to ecs') {
             steps {
-            withAWS(credentials: 'awscreds', region: 'ap-southeast-1') {
+            withAWS(credentials: 'awscreds', region: 'ap-southeast-2') {
                 sh 'aws ecs update-service --cluster ${cluster} --service ${service} --force-new-deployment'
             }
         } 
