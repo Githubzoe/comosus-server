@@ -60,9 +60,9 @@ pipeline {
 	tools { nodejs "node" }
 	
 	environment {
-		registryCredential = 'ecr:ap-southeast-2:awscreds'
-		appRegistry = "997730026610.dkr.ecr.ap-southeast-2.amazonaws.com/comosus-server"
-		comosusServerRegistry = "https://997730026610.dkr.ecr.ap-southeast-2.amazonaws.com/"
+		registryCredential = 'ecr:us-east-1:awscreds'
+		appRegistry = "997730026610.dkr.ecr.us-east-1.amazonaws.com/a-comosus-server-img"
+		comosusServerRegistry = "https://997730026610.dkr.ecr.us-east-1.amazonaws.com/"
 		cluster = "comosusServer"
     service = "comosusServerSvc"
 	}
