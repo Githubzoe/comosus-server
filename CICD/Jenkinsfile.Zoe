@@ -9,7 +9,7 @@ pipeline {
 			    echo 'Cleanup docker space'
           sh 'docker system prune -f'
 					cleanWs()
-          checkout scm
+          // checkout scm
 		  }
 		}
 		
