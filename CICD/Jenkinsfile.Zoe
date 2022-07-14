@@ -1,6 +1,11 @@
 pipeline {
   agent any
   
+  options {
+    disableConcurrentBuilds()
+    timeout(time: 1, unit: 'HOURS')
+  }
+
   tools { nodejs "node-16.15.1" }
   
   stages {
@@ -23,8 +28,8 @@ pipeline {
         sh 'yarn && yarn prisma generate && yarn build'
       }
     }
-
-		stage('Test'){
+    
+    stage('Test'){
       steps {
         sh 'echo unit testing'
       }
